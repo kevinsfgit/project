@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="project.css">
+</head>
+<body>
+<div id="searchDiv">
+  <input type="text" id="searchValue" value="starcraft">
+   <button onclick="loadinfo(document.getElementById('searchValue').value, 0, 10)">Search</button> 
+</div>
+<hr>
+<div id="totalNumDiv">
+Total results: <span id="totalNum"></span> <div id="pageArrow"><span id="leftPage" onclick= "pageChangeLeft()">&#8678;<span id="leftNum">1</span></span> <span id="rightPage" onclick= "pageChangeRight()">/ <span id="rightNum">10</span> &#8680;</span></div>
+</div>
+<ul id="list">
+</ul>
+
+<script>
+
+function pageChangeLeft() {
+    var leftNumStr = document.getElementById("leftNum");
+    var leftNum = parseInt(leftNumStr.innerHTML);
+    var newLeftNum = leftNum - 1;
+
+    if (newLeftNum <= 10) {
+
+        newLeftNum = 10;
+
+    }
+
+    var rightNumStr = document.getElementById("rightNum");
+    rightNumStr.innerHTML = newLeftNum.toString();
+    leftNumStr.innerHTML = (newLeftNum-10+1).toString();
+    loadinfo(document.getElementById('searchValue').value, (newLeftNum-10+1), newLeftNum);
+}
+
+function pageChangeRight() {
+
+    var rightNumStr = document.getElementById("rightNum");
+    var rightNum = parseInt(rightNumStr.innerHTML);
+    var newRightNum = rightNum + 10;
+
+    var rightNumStr = document.getElementById("rightNum");
+    rightNumStr.innerHTML = newRightNum.toString();
+
+
+    var leftNumStr = document.getElementById("leftNum");
+    var newLeftNum = newRightNum - 10 + 1;
+
+    leftNumStr.innerHTML = newLeftNum.toString();
+    loadinfo(document.getElementById('searchValue').value, (newRightNum-10+1), newRightNum);
+
+}
+
+var currentID = 0;
+function loadinfo(queryString, start, end) {
+
+var list = document.getElementById("list");
+list.innerHTML="";
+var xmlhttp = new XMLHttpRequest();
+var url = "https://api.twitch.tv/kraken/search/streams?q=" + queryString;
+
+xmlhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+        var myArr = JSON.parse(this.responseText);
+        myFunction(myArr, start, end);
+    }
+};
+xmlhttp.open("GET", url, true);
+xmlhttp.setRequestHeader("Client-ID", "hoas7prs8w3v557sqhmpfm5bt9oofdd");
+xmlhttp.send();
+
+function myFunction(arr, start, end) {
+    var out = "";
+
+    document.getElementById("totalNum").innerHTML = arr["_total"];
+
+    var ul = document.getElementById("list");
+    for ( var i = start; i <= end; i++) {
+      
+
+      var li = document.createElement("li");
+
+      var oImg=document.createElement("img");
+      oImg.setAttribute('src', arr.streams[i].preview.medium);
+      li.appendChild(oImg);
+
+      var liDiv = document.createElement("div");
+      liDiv.setAttribute("class", "liText");
+
+      li.appendChild(liDiv);
+
+      var textDisplayName=document.createElement("h1");
+      textDisplayName.innerHTML = arr.streams[i].channel.display_name;
+      liDiv.appendChild(textDisplayName);
+      liDiv.appendChild(document.createTextNode(arr.streams[i].game   + " - " + arr.streams[i].viewers ));
+      var liDivP = document.createElement("p");
+
+      liDivP.innerHTML = arr.streams[i].channel.status;
+      liDiv.appendChild(liDivP);
+
+      var liDivP = document.createElement("p");
+
+      liDivP.innerHTML = "Created at: " + arr.streams[i].channel.created_at;
+      liDiv.appendChild(liDivP);
+
+      var liDivP = document.createElement("p");
+
+      liDivP.innerHTML = "Updated at: " + arr.streams[i].channel.updated_at;
+      liDiv.appendChild(liDivP);
+
+      li.setAttribute("class", "element"); 
+      ul.appendChild(li);
+    }
+    currentID = end;
+}
+
+}
+
+</script>
+
+</body>
+</html>
+
